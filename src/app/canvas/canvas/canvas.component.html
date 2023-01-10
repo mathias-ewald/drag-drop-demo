@@ -1,0 +1,89 @@
+<ng-template #boxTemplateStd let-box="box">
+    <div style="width: 100%; height: 100%;"
+        [style.background-color]="box.color || 'rgba(160, 160, 160, 0.5)'">
+    </div>
+</ng-template>
+
+<!-- 16:9 Canvas -->
+<div #canvas class="canvas" (mousedown)="deselectAll()">
+
+    <!-- Background Layer -->
+    <div class="layer">
+        <div *ngFor="let box of backgroundBoxes; let index = index;" 
+            class="box-content box-background box-template-container">
+            <ng-container *ngTemplateOutlet="templates === true && box.template != null ? box.template : boxTemplateStd; context: { box: box }"></ng-container>
+        </div>
+    </div>
+
+    <!-- Grid Layer -->
+    <div class="layer" *ngIf="grid === true">
+        <svg viewBox="0 0 1920 1080">
+            <rect width="100%" height="100%" fill="rgba(0, 0, 0, 0)"/>
+            <line x1="480" y1="0" x2="480" y2="1080" style="stroke:rgb(44, 44, 44);stroke-width:2" />
+            <line x1="960" y1="0" x2="960" y2="1080" style="stroke:rgb(44, 44, 44);stroke-width:2" />
+            <line x1="1440" y1="0" x2="1440" y2="1080" style="stroke:rgb(44, 44, 44);stroke-width:2" />
+            <line x1="0" y1="270" x2="1920" y2="270" style="stroke:rgb(44, 44, 44);stroke-width:2" />
+            <line x1="0" y1="540" x2="1920" y2="540" style="stroke:rgb(44, 44, 44);stroke-width:2" />
+            <line x1="0" y1="810" x2="1920" y2="810" style="stroke:rgb(44, 44, 44);stroke-width:2" />
+            </svg>
+    </div>
+
+    <!-- Foreground Layer -->
+    <div class="layer">
+        <div *ngFor="let box of foregroundBoxes; let index = index;" 
+            class="box-container"
+            [class.box-container-selected]="box.selected === true"
+
+            cdkDrag [cdkDragDisabled]="box.selected === false || edit === false || box.movable === false" 
+            (cdkDragEnded)="boxReleased($event, box)"
+
+            (mousedown)="boxClicked($event, box)"
+            
+            [style.top.px]="calcBoxTop(box)"
+            [style.left.px]="calcBoxLeft(box)"
+            [style.width.px]="calcBoxWidth(box)"
+            [style.height.px]="calcBoxHeight(box)"
+            [style.z-index]="calcBoxZIndex(box)"
+
+            [style.cursor]="edit === true && editable(box) ? 'pointer' : 'auto'"
+            [style.visibility]="box.hide === true ? 'hidden' : 'visible'"
+            >
+
+            <div class="box-content box-background box-template-container"
+                [style.clip-path]="calcBoxClipPath(box)">
+                <ng-container *ngTemplateOutlet="templates === true && box.template != null ? box.template : boxTemplateStd; context: { box: box }"></ng-container>
+            </div>
+
+            <div class="box-content box-handle-container"
+                [style.top.px]="calcBoxClipTop(box)"
+                [style.right.px]="calcBoxClipRight(box)"
+                [style.bottom.px]="calcBoxClipBottom(box)"
+                [style.left.px]="calcBoxClipLeft(box)"
+                [style.visibility]="box.selected === true ? 'visible': 'hidden'">
+
+                <!-- Drag Handles -->
+                <ng-container *ngIf="box.croppable === true">
+                    <div #cropTopHndl       cdkDrag [cdkDragData]="box" [cdkDragDisabled]="box.selected === false || edit === false" cdkDragLockAxis="y" class="crop-handle crop-vertical crop-top"      (mousedown)="swallowEvent($event)" (cdkDragEnded)="cropTopHandleEnd($event)"></div>
+                    <div #cropRightHndl     cdkDrag [cdkDragData]="box" [cdkDragDisabled]="box.selected === false || edit === false" cdkDragLockAxis="x" class="crop-handle crop-horizontal crop-right"  (mousedown)="swallowEvent($event)" (cdkDragEnded)="cropRightHandleEnd($event)"></div>
+                    <div #cropBottomHndl    cdkDrag [cdkDragData]="box" [cdkDragDisabled]="box.selected === false || edit === false" cdkDragLockAxis="y" class="crop-handle crop-vertical crop-bottom"   (mousedown)="swallowEvent($event)" (cdkDragEnded)="cropBottomHandleEnd($event)"></div>
+                    <div #cropLeftHndl      cdkDrag [cdkDragData]="box" [cdkDragDisabled]="box.selected === false || edit === false" cdkDragLockAxis="x" class="crop-handle crop-horizontal crop-left"   (mousedown)="swallowEvent($event)" (cdkDragEnded)="cropLeftHandleEnd($event)"></div>
+                </ng-container>
+
+                <!-- Scale Handles -->
+                <ng-container *ngIf="box.scalable === true">
+                    <div #scaleTopLeftHndl      cdkDrag [cdkDragData]="box" [cdkDragDisabled]="box.selected === false || edit === false" class="scale-handle scale-top-left"     [cdkDragConstrainPosition]="constrainNWSE.bind(this)" (mousedown)="swallowEvent($event)" (cdkDragEnded)="scaleNWSE($event)"></div>
+                    <div #scaleTopRightHndl     cdkDrag [cdkDragData]="box" [cdkDragDisabled]="box.selected === false || edit === false" class="scale-handle scale-top-right"    [cdkDragConstrainPosition]="constrainNESW.bind(this)" (mousedown)="swallowEvent($event)" (cdkDragEnded)="scaleNESW($event)"></div>
+                    <div #scaleBottomRightHndl  cdkDrag [cdkDragData]="box" [cdkDragDisabled]="box.selected === false || edit === false" class="scale-handle scale-bottom-right" [cdkDragConstrainPosition]="constrainSENW.bind(this)" (mousedown)="swallowEvent($event)" (cdkDragEnded)="scaleSENW($event)"></div>
+                    <div #scaleBottomLeftHndl   cdkDrag [cdkDragData]="box" [cdkDragDisabled]="box.selected === false || edit === false" class="scale-handle scale-bottom-left"  [cdkDragConstrainPosition]="constrainSWNE.bind(this)" (mousedown)="swallowEvent($event)" (cdkDragEnded)="scaleSWNE($event)"></div>
+                </ng-container>
+                    
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Layer -->
+    <div class="layer" style="padding: 5px; color: white">
+        POS: {{ posX }}/{{ posY }}<br/>DIM: {{ width }}/{{ height }}
+    </div>
+
+</div>
