@@ -50,8 +50,12 @@
             >
 
             <div class="box-content box-background box-template-container"
-                [style.clip-path]="calcBoxClipPath(box)">
-                <ng-container *ngTemplateOutlet="templates === true && box.template != null ? box.template : boxTemplateStd; context: { box: box }"></ng-container>
+                [style.clip-path]="calcBoxClipPath(box)"
+                [style.transform]="'scale(' + scaleX(box) + ', ' + scaleY(box) + ')'"
+                [style.transform-origin]="'top left'">
+                <ng-container 
+                    *ngTemplateOutlet="templates === true && box.template != null ? box.template : boxTemplateStd; context: { box: box }">
+                </ng-container>
             </div>
 
             <div class="box-content box-handle-container"

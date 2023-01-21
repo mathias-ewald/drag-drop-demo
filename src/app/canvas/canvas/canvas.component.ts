@@ -48,6 +48,7 @@ export class CanvasComponent implements OnInit, AfterViewInit, AfterViewChecked,
   @Input()
   public boxes?: Box[];
 
+
   /**
    * We need to know about the canvas' dimensions in order to 
    * properly calculate element positions and dimentions later
@@ -110,6 +111,13 @@ export class CanvasComponent implements OnInit, AfterViewInit, AfterViewChecked,
     this.updateCanvasInfo();
   }
 
+  public scaleX(box: Box): number {
+    return 1;
+  }
+
+  public scaleY(box: Box): number {
+    return 0.5;
+  }
 
   /**
    * Listen to window resize events in order to trigger an update for

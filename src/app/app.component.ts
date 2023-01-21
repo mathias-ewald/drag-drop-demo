@@ -53,7 +53,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         movable: true,
         posX: 0, posY: 0,
         scalable: true,
-        scaleX: 0.5, scaleY: 0.5,
+        scaleX: 1, scaleY: 0.5,
         croppable: true,
         cropTop: 0, cropRight: 0, cropBottom: 0, cropLeft: 0,
         selected: false, hide: false,
