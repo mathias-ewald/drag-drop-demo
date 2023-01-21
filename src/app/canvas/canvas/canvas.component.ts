@@ -116,7 +116,7 @@ export class CanvasComponent implements OnInit, AfterViewInit, AfterViewChecked,
   }
 
   public scaleY(box: Box): number {
-    return 0.5;
+    return 1;
   }
 
   /**
